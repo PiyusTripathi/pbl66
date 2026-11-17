@@ -1,0 +1,27 @@
+[
+  {
+    "directory": "C:/Users/Piyush Tripathi/Desktop/pbl 66",
+    "command": "C:/MinGW/bin/gcc.exe -O3 -Wall -Wextra -D__USE_MINGW_ANSI_STDIO=1 -Iinclude -isystem C:/MinGW/include -isystem C:/MinGW/lib/gcc/mingw32/6.3.0/include -c src/gui.c",
+    "file": "src/gui.c"
+  },
+  {
+    "directory": "C:/Users/Piyush Tripathi/Desktop/pbl 66",
+    "command": "C:/MinGW/bin/gcc.exe -O3 -Wall -Wextra -D__USE_MINGW_ANSI_STDIO=1 -Iinclude -isystem C:/MinGW/include -isystem C:/MinGW/lib/gcc/mingw32/6.3.0/include -c src/main.c",
+    "file": "src/main.c"
+  },
+  {
+    "directory": "C:/Users/Piyush Tripathi/Desktop/pbl 66",
+    "command": "C:/MinGW/bin/gcc.exe -O3 -Wall -Wextra -D__USE_MINGW_ANSI_STDIO=1 -Iinclude -isystem C:/MinGW/include -isystem C:/MinGW/lib/gcc/mingw32/6.3.0/include -c src/huffman.c",
+    "file": "src/huffman.c"
+  },
+  {
+    "directory": "C:/Users/Piyush Tripathi/Desktop/pbl 66",
+    "command": "C:/MinGW/bin/gcc.exe -O3 -Wall -Wextra -D__USE_MINGW_ANSI_STDIO=1 -Iinclude -isystem C:/MinGW/include -isystem C:/MinGW/lib/gcc/mingw32/6.3.0/include -c src/bitio.c",
+    "file": "src/bitio.c"
+  },
+  {
+    "directory": "C:/Users/Piyush Tripathi/Desktop/pbl 66",
+    "command": "C:/MinGW/bin/gcc.exe -O3 -Wall -Wextra -D__USE_MINGW_ANSI_STDIO=1 -Iinclude -isystem C:/MinGW/include -isystem C:/MinGW/lib/gcc/mingw32/6.3.0/include -c src/crc32.c",
+    "file": "src/crc32.c"
+  }
+]

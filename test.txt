@@ -1,0 +1,3 @@
+Bhai ye ek test file hai. Huffman coding algorithm is file ko compress karke chota kar dega!
+Huffman coding repetitive characters ko kam bits me store karta hai.
+Testing testing testing testing 1 2 3!

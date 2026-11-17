@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huffman File Compression Tool - Interactive GUI</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      margin-bottom: 24px;
+    }
+    .dropzone {
+      border: 2px dashed #475569;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .drop-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .drop-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .drop-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .file-input {
+      display: none;
+    }
+    .file-preview {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .file-info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .file-name {
+      font-weight: 600;
+      color: #60a5fa;
+      word-break: break-all;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-success:hover {
+      background: #059669;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .result-section {
+      display: none;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .stat-value.highlight {
+      color: #34d399;
+    }
+    .code-table-container {
+      margin-top: 16px;
+      max-height: 160px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      background: #0f172a;
+      color: var(--text-muted);
+    }
+    code {
+      font-family: monospace;
+      color: #f43f5e;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>⚡ Huffman File Compression Tool</h1>
+    <p>Lossless Huffman Coding • 1-Click File Compression & Decompression</p>
+  </div>
+
+  <div class="card">
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-icon">📁</div>
+      <div class="drop-title">Drop your file here, or click to browse</div>
+      <div class="drop-subtitle">Supports all file formats (.txt, .pdf, .jpg, .bin, .huf, etc.)</div>
+      <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+    </div>
+
+    <div class="file-preview" id="filePreview">
+      <div class="file-info-row">
+        <span>File:</span>
+        <span class="file-name" id="previewName">-</span>
+      </div>
+      <div class="file-info-row">
+        <span>Original Size:</span>
+        <span id="previewSize">-</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="actionBtn" disabled onclick="executeAction()">
+      ⚡ COMPRESS FILE NOW
+    </button>
+
+    <div class="result-section" id="resultSection">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Original Size</div>
+          <div class="stat-value" id="resOrigSize">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label" id="resCompLabel">Compressed Size</div>
+          <div class="stat-value highlight" id="resCompSize">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Space Saved</div>
+          <div class="stat-value highlight" id="resSavings">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">CRC32 Integrity</div>
+          <div class="stat-value" id="resCrc" style="color: #a78bfa;">Verified</div>
+        </div>
+      </div>
+
+      <button class="btn btn-success" id="downloadBtn" onclick="downloadResult()">
+        📥 Download Processed File
+      </button>
+
+      <div id="codeTableWrap" style="display:none; margin-top:20px;">
+        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-muted);">
+          Huffman Variable-Length Code Table (Top Frequencies):
+        </div>
+        <div class="code-table-container">
+          <table>
+            <thead>
+              <tr><th>Byte / Char</th><th>Count</th><th>Huffman Bit Code</th><th>Bits Saved</th></tr>
+            </thead>
+            <tbody id="codeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentFile = null;
+  let processedBlob = null;
+  let processedFilename = "";
+  let isDecompress = false;
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const actionBtn = document.getElementById('actionBtn');
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length) handleFile(files[0]);
+  });
+
+  function handleFileSelect(event) {
+    if (event.target.files.length) handleFile(event.target.files[0]);
+  }
+
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i] + ' (' + bytes.toLocaleString() + ' B)';
+  }
+
+  function handleFile(file) {
+    currentFile = file;
+    document.getElementById('filePreview').style.display = 'block';
+    document.getElementById('previewName').textContent = file.name;
+    document.getElementById('previewSize').textContent = formatBytes(file.size);
+    document.getElementById('resultSection').style.display = 'none';
+
+    isDecompress = file.name.toLowerCase().endsWith('.huf');
+    if (isDecompress) {
+      actionBtn.textContent = '🔄 DECOMPRESS & RESTORE FILE';
+      actionBtn.className = 'btn btn-primary';
+    } else {
+      actionBtn.textContent = '⚡ COMPRESS FILE NOW (.huf)';
+      actionBtn.className = 'btn btn-primary';
+    }
+    actionBtn.disabled = false;
+  }
+
+  // IEEE 802.3 CRC32
+  const crcTable = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    crcTable[i] = c;
+  }
+  function calcCRC32(data) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) {
+      crc = crcTable[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  // Min-Heap
+  class MinHeap {
+    constructor() { this.heap = []; }
+    push(node) {
+      this.heap.push(node);
+      this._bubbleUp(this.heap.length - 1);
+    }
+    pop() {
+      if (!this.heap.length) return null;
+      const top = this.heap[0];
+      const bottom = this.heap.pop();
+      if (this.heap.length) {
+        this.heap[0] = bottom;
+        this._sinkDown(0);
+      }
+      return top;
+    }
+    size() { return this.heap.length; }
+    _bubbleUp(i) {
+      while (i > 0) {
+        const p = Math.floor((i - 1) / 2);
+        if (this.heap[p].freq <= this.heap[i].freq) break;
+        [this.heap[p], this.heap[i]] = [this.heap[i], this.heap[p]];
+        i = p;
+      }
+    }
+    _sinkDown(i) {
+      const len = this.heap.length;
+      while (true) {
+        let left = 2 * i + 1, right = 2 * i + 2, smallest = i;
+        if (left < len && this.heap[left].freq < this.heap[smallest].freq) smallest = left;
+        if (right < len && this.heap[right].freq < this.heap[smallest].freq) smallest = right;
+        if (smallest === i) break;
+        [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+        i = smallest;
+      }
+    }
+  }
+
+  class BitWriter {
+    constructor() {
+      this.bytes = [];
+      this.currentByte = 0;
+      this.bitCount = 0;
+    }
+    writeBit(bit) {
+      this.currentByte = (this.currentByte << 1) | (bit & 1);
+      this.bitCount++;
+      if (this.bitCount === 8) {
+        this.bytes.push(this.currentByte);
+        this.currentByte = 0;
+        this.bitCount = 0;
+      }
+    }
+    writeByte(b) {
+      for (let i = 7; i >= 0; i--) {
+        this.writeBit((b >> i) & 1);
+      }
+    }
+    flush() {
+      if (this.bitCount > 0) {
+        this.currentByte <<= (8 - this.bitCount);
+        this.bytes.push(this.currentByte);
+        this.currentByte = 0;
+        this.bitCount = 0;
+      }
+    }
+  }
+
+  class BitReader {
+    constructor(data, offset) {
+      this.data = data;
+      this.offset = offset;
+      this.currentByte = 0;
+      this.bitsLeft = 0;
+    }
+    readBit() {
+      if (this.bitsLeft === 0) {
+        if (this.offset >= this.data.length) return -1;
+        this.currentByte = this.data[this.offset++];
+        this.bitsLeft = 8;
+      }
+      this.bitsLeft--;
+      return (this.currentByte >> this.bitsLeft) & 1;
+    }
+    readByte() {
+      let val = 0;
+      for (let i = 0; i < 8; i++) {
+        const b = this.readBit();
+        if (b === -1) return -1;
+        val = (val << 1) | b;
+      }
+      return val;
+    }
+  }
+
+  async function executeAction() {
+    if (!currentFile) return;
+    actionBtn.disabled = true;
+    actionBtn.textContent = 'Processing... Please wait...';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const buffer = new Uint8Array(e.target.result);
+      if (isDecompress) {
+        decompressFile(buffer);
+      } else {
+        compressFile(buffer);
+      }
+    };
+    reader.readAsArrayBuffer(currentFile);
+  }
+
+  function compressFile(data) {
+    const origSize = data.length;
+    const crc = calcCRC32(data);
+
+    // 1. Frequency count
+    const freq = new Array(256).fill(0);
+    for (let i = 0; i < origSize; i++) freq[data[i]]++;
+
+    let uniqueCount = 0;
+    let singleSym = 0;
+    for (let i = 0; i < 256; i++) {
+      if (freq[i] > 0) {
+        uniqueCount++;
+        singleSym = i;
+      }
+    }
+
+    // Header buffer (20 or 21 bytes)
+    const headerLen = (uniqueCount === 1) ? 21 : 20;
+    const header = new Uint8Array(headerLen);
+    header[0] = 0x48; header[1] = 0x55; header[2] = 0x46; header[3] = 0x31; // HUF1
+    header[4] = 1; // version
+    header[5] = 0; // flags
+
+    // original size (uint64 LE)
+    let sz = BigInt(origSize);
+    for (let i = 0; i < 8; i++) {
+      header[6 + i] = Number(sz & 0xFFn);
+      sz >>= 8n;
+    }
+
+    // CRC32 (uint32 LE)
+    header[14] = crc & 0xFF;
+    header[15] = (crc >> 8) & 0xFF;
+    header[16] = (crc >> 16) & 0xFF;
+    header[17] = (crc >> 24) & 0xFF;
+
+    // Unique count (uint16 LE)
+    header[18] = uniqueCount & 0xFF;
+    header[19] = (uniqueCount >> 8) & 0xFF;
+
+    if (uniqueCount === 1) {
+      header[20] = singleSym;
+      const finalBytes = header;
+      displayResults(origSize, finalBytes.length, crc, finalBytes, currentFile.name + '.huf', []);
+      return;
+    }
+
+    if (origSize === 0) {
+      displayResults(0, header.length, 0, header, currentFile.name + '.huf', []);
+      return;
+    }
+
+    // Build Huffman Tree
+    const heap = new MinHeap();
+    for (let i = 0; i < 256; i++) {
+      if (freq[i] > 0) {
+        heap.push({ symbol: i, freq: freq[i], left: null, right: null });
+      }
+    }
+
+    while (heap.size() > 1) {
+      const left = heap.pop();
+      const right = heap.pop();
+      heap.push({ symbol: -1, freq: left.freq + right.freq, left, right });
+    }
+
+    const root = heap.pop();
+    const codes = new Array(256).fill('');
+    function genCodes(node, str) {
+      if (!node) return;
+      if (!node.left && !node.right) {
+        codes[node.symbol] = str;
+        return;
+      }
+      genCodes(node.left, str + '0');
+      genCodes(node.right, str + '1');
+    }
+    genCodes(root, '');
+
+    const bw = new BitWriter();
+    function serializeTree(node) {
+      if (!node.left && !node.right) {
+        bw.writeBit(1);
+        bw.writeByte(node.symbol);
+      } else {
+        bw.writeBit(0);
+        serializeTree(node.left);
+        serializeTree(node.right);
+      }
+    }
+    serializeTree(root);
+
+    // Encode payload
+    for (let i = 0; i < origSize; i++) {
+      const code = codes[data[i]];
+      for (let j = 0; j < code.length; j++) {
+        bw.writeBit(code.charCodeAt(j) - 48);
+      }
+    }
+    bw.flush();
+
+    const bitstream = bw.bytes;
+    const finalData = new Uint8Array(header.length + bitstream.length);
+    finalData.set(header, 0);
+    finalData.set(bitstream, header.length);
+
+    // Top codes for display table
+    const topCodes = [];
+    for (let i = 0; i < 256; i++) {
+      if (freq[i] > 0) {
+        topCodes.push({ char: i, count: freq[i], code: codes[i] });
+      }
+    }
+    topCodes.sort((a, b) => b.count - a.count);
+
+    displayResults(origSize, finalData.length, crc, finalData, currentFile.name + '.huf', topCodes.slice(0, 10));
+  }
+
+  function decompressFile(data) {
+    if (data.length < 20 || data[0] !== 0x48 || data[1] !== 0x55 || data[2] !== 0x46 || data[3] !== 0x31) {
+      alert('Error: Not a valid Huffman (.huf) archive!');
+      actionBtn.disabled = false;
+      return;
+    }
+
+    let origSize = 0;
+    for (let i = 0; i < 8; i++) {
+      origSize += data[6 + i] * Math.pow(256, i);
+    }
+
+    const expectedCRC = (data[14] | (data[15] << 8) | (data[16] << 16) | (data[17] << 24)) >>> 0;
+    const uniqueCount = data[18] | (data[19] << 8);
+
+    let output = new Uint8Array(origSize);
+
+    if (origSize === 0) {
+      finishDecomp(output, expectedCRC, data.length, origSize);
+      return;
+    }
+
+    if (uniqueCount === 1) {
+      const sym = data[20];
+      output.fill(sym);
+      finishDecomp(output, expectedCRC, data.length, origSize);
+      return;
+    }
+
+    const br = new BitReader(data, 20);
+    function deserializeTree() {
+      const bit = br.readBit();
+      if (bit === -1) return null;
+      if (bit === 1) {
+        const sym = br.readByte();
+        return { symbol: sym, left: null, right: null };
+      } else {
+        const left = deserializeTree();
+        const right = deserializeTree();
+        return { symbol: -1, left, right };
+      }
+    }
+
+    const root = deserializeTree();
+    let decoded = 0;
+    let curr = root;
+
+    while (decoded < origSize) {
+      const bit = br.readBit();
+      if (bit === -1) break;
+      curr = (bit === 1) ? curr.right : curr.left;
+      if (!curr.left && !curr.right) {
+        output[decoded++] = curr.symbol;
+        curr = root;
+      }
+    }
+
+    finishDecomp(output, expectedCRC, data.length, origSize);
+  }
+
+  function finishDecomp(output, expectedCRC, compSize, origSize) {
+    const calcCRC = calcCRC32(output);
+    if (calcCRC !== expectedCRC) {
+      alert('Warning: Checksum Mismatch! File may be corrupted.');
+    }
+
+    let outName = currentFile.name;
+    if (outName.toLowerCase().endsWith('.huf')) {
+      outName = outName.substring(0, outName.length - 4);
+    } else {
+      outName += '.restored';
+    }
+
+    displayResults(compSize, origSize, expectedCRC, output, outName, [], true);
+  }
+
+  function displayResults(origSize, finalSize, crc, outData, outName, topCodes, isDecomp = false) {
+    document.getElementById('resultSection').style.display = 'block';
+    processedBlob = new Blob([outData], { type: 'application/octet-stream' });
+    processedFilename = outName;
+
+    document.getElementById('resOrigSize').textContent = formatBytes(origSize);
+    document.getElementById('resCompSize').textContent = formatBytes(finalSize);
+    document.getElementById('resCompLabel').textContent = isDecomp ? 'Restored Size' : 'Compressed Size';
+
+    if (!isDecomp && origSize > 0) {
+      const saved = ((1 - (finalSize / origSize)) * 100).toFixed(1);
+      document.getElementById('resSavings').textContent = saved + '%';
+    } else {
+      document.getElementById('resSavings').textContent = '100% Match';
+    }
+
+    document.getElementById('resCrc').textContent = '0x' + crc.toString(16).toUpperCase().padStart(8, '0');
+    document.getElementById('downloadBtn').textContent = '📥 Download ' + outName;
+
+    const tableWrap = document.getElementById('codeTableWrap');
+    const tableBody = document.getElementById('codeTableBody');
+    tableBody.innerHTML = '';
+    if (topCodes && topCodes.length) {
+      tableWrap.style.display = 'block';
+      topCodes.forEach(item => {
+        const charDisplay = (item.char >= 32 && item.char <= 126) ? `'${String.fromCharCode(item.char)}'` : `0x${item.char.toString(16).toUpperCase()}`;
+        const row = document.createElement('tr');
+        row.innerHTML = `<td><b>${charDisplay}</b></td><td>${item.count.toLocaleString()}</td><td><code>${item.code}</code></td><td>${(8 - item.code.length)} bits</td>`;
+        tableBody.appendChild(row);
+      });
+    } else {
+      tableWrap.style.display = 'none';
+    }
+
+    actionBtn.disabled = false;
+    actionBtn.textContent = isDecompress ? '🔄 DECOMPRESS AGAIN' : '⚡ COMPRESS AGAIN';
+  }
+
+  function downloadResult() {
+    if (!processedBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(processedBlob);
+    a.download = processedFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+
+</body>
+</html>
